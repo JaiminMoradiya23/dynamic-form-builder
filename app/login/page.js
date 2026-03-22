@@ -27,6 +27,10 @@ export default function LoginPage() {
       return;
     }
     localStorage.setItem("isAuthenticated", "true");
+    localStorage.setItem("userCredentials", JSON.stringify({
+      email: data.email,
+      password: data.password
+    }));
     router.push("/dashboard");
   };
 

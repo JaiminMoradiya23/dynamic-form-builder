@@ -27,6 +27,7 @@ export default function Header({ onMenuToggle }) {
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userCredentials");
     router.replace("/login");
   };
 
