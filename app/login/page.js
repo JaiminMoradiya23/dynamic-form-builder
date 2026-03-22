@@ -31,14 +31,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white/70 backdrop-blur-md dark:bg-slate-900/70">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
         className="w-full max-w-md"
       >
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500">
               <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -68,10 +68,10 @@ export default function LoginPage() {
                 type="text"
                 autoComplete="email"
                 placeholder="you@example.com"
-                className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:ring-2 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500 ${
+                className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:ring-2 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500 ${
                   errors.email
                     ? "border-red-400 focus:border-red-400 focus:ring-red-500/20 dark:border-red-500"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-600 dark:focus:border-indigo-500"
+                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700 dark:focus:border-indigo-500"
                 }`}
                 {...register("email", {
                   required: "Email is required",
@@ -94,10 +94,10 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Enter your password"
-                className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:ring-2 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500 ${
+                className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:ring-2 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500 ${
                   errors.password
                     ? "border-red-400 focus:border-red-400 focus:ring-red-500/20 dark:border-red-500"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-600 dark:focus:border-indigo-500"
+                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700 dark:focus:border-indigo-500"
                 }`}
                 {...register("password", { required: "Password is required" })}
               />
@@ -109,7 +109,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-slate-800"
+              className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-slate-900"
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
             </button>

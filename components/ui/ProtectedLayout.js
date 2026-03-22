@@ -10,14 +10,15 @@ export default function ProtectedLayout({ children }) {
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-        <div className="lg:pl-64">
+
+        <div className="flex flex-1 flex-col lg:pl-[264px]">
           <Header onMenuToggle={() => setSidebarOpen((prev) => !prev)} />
-          <main className="p-6">{children}</main>
+          <main className="flex-1 p-6">{children}</main>
         </div>
       </div>
     </AuthGuard>
