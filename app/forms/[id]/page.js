@@ -1,15 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ProtectedLayout from "@/components/ui/ProtectedLayout";
 import FieldLibrary from "@/components/builder/FieldLibrary";
 import FormCanvas from "@/components/builder/FormCanvas";
 import FieldSettings from "@/components/builder/FieldSettings";
 import { getFormById, updateForm } from "@/utils/storageHelpers";
-import { setFields, addField, removeField, updateField } from "@/store/slices/formSlice";
+import {
+  setFields,
+  addField,
+  removeField,
+  updateField,
+} from "@/store/slices/formSlice";
 import { setSelectedField } from "@/store/slices/uiSlice";
 
 export default function FormBuilderPage() {
@@ -22,6 +27,11 @@ export default function FormBuilderPage() {
 
   const [form, setForm] = useState(null);
   const [notFound, setNotFound] = useState(false);
+  const [formName, setFormName] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("saved");
+  const nameInputRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
   const selectedField = fields.find((f) => f.id === selectedFieldId) || null;
 
@@ -29,6 +39,7 @@ export default function FormBuilderPage() {
     const loaded = getFormById(id);
     if (loaded) {
       setForm(loaded);
+      setFormName(loaded.name);
       dispatch(setFields(loaded.fields));
     } else {
       setNotFound(true);
@@ -39,11 +50,46 @@ export default function FormBuilderPage() {
     };
   }, [id, dispatch]);
 
+  const persistToStorage = useCallback(
+    (fieldsToSave, nameToSave) => {
+      if (!form) return;
+      setSaveStatus("saving");
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        updateForm(form.id, { fields: fieldsToSave, name: nameToSave });
+        setSaveStatus("saved");
+      }, 400);
+    },
+    [form]
+  );
+
   useEffect(() => {
-    if (form && fields) {
-      updateForm(form.id, { fields });
+    if (form) {
+      persistToStorage(fields, formName);
     }
-  }, [fields, form]);
+  }, [fields, formName, form, persistToStorage]);
+
+  useEffect(() => {
+    return () => clearTimeout(saveTimeoutRef.current);
+  }, []);
+
+  function handleNameBlur() {
+    setIsEditingName(false);
+    const trimmed = formName.trim();
+    if (!trimmed) {
+      setFormName(form.name);
+    }
+  }
+
+  function handleNameKeyDown(e) {
+    if (e.key === "Enter") {
+      nameInputRef.current?.blur();
+    }
+    if (e.key === "Escape") {
+      setFormName(form.name);
+      setIsEditingName(false);
+    }
+  }
 
   function handleAddField(type) {
     const defaultLabels = {
@@ -63,7 +109,10 @@ export default function FormBuilderPage() {
       required: false,
       placeholder: "",
       validation: {},
-      options: type === "select" || type === "radio" ? ["Option 1", "Option 2"] : [],
+      options:
+        type === "select" || type === "radio"
+          ? ["Option 1", "Option 2"]
+          : [],
     };
 
     dispatch(addField(newField));
@@ -146,17 +195,81 @@ export default function FormBuilderPage() {
           transition={{ duration: 0.3 }}
           className="mb-4 flex shrink-0 items-center justify-between"
         >
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-              {form.name}
-            </h2>
-            <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
-              {fields.length} {fields.length === 1 ? "field" : "fields"}
-            </p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3">
+              {isEditingName ? (
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  onBlur={handleNameBlur}
+                  onKeyDown={handleNameKeyDown}
+                  autoFocus
+                  className="w-full max-w-sm rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xl font-semibold text-slate-900 outline-none ring-2 ring-indigo-400/20 transition-all duration-200 dark:border-indigo-500/50 dark:bg-slate-800 dark:text-white dark:ring-indigo-500/20"
+                />
+              ) : (
+                <button
+                  onClick={() => setIsEditingName(true)}
+                  className="group flex items-center gap-2 rounded-lg px-1 py-0.5 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <h2 className="truncate text-xl font-semibold text-slate-900 dark:text-white">
+                    {formName}
+                  </h2>
+                  <svg
+                    className="h-4 w-4 shrink-0 text-slate-400 opacity-0 transition-all duration-200 group-hover:opacity-100"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            <div className="mt-1 flex items-center gap-3">
+              <p className="text-sm text-slate-400 dark:text-slate-500">
+                {fields.length} {fields.length === 1 ? "field" : "fields"}
+              </p>
+              <span className="text-slate-300 dark:text-slate-700">&middot;</span>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={saveStatus}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex items-center gap-1.5 text-sm"
+                >
+                  {saveStatus === "saved" ? (
+                    <>
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400">
+                        Auto-saved
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                      <span className="text-amber-600 dark:text-amber-400">
+                        Saving...
+                      </span>
+                    </>
+                  )}
+                </motion.span>
+              </AnimatePresence>
+            </div>
           </div>
+
           <button
             onClick={() => router.push("/forms")}
-            className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+            className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
           >
             <svg
               className="h-4 w-4"
@@ -189,12 +302,10 @@ export default function FormBuilderPage() {
             selectedFieldId={selectedFieldId}
             onSelectField={handleSelectField}
             onDeleteField={handleDeleteField}
+            onAddFirstField={() => handleAddField("text")}
           />
 
-          <FieldSettings
-            field={selectedField}
-            onUpdate={handleUpdateField}
-          />
+          <FieldSettings field={selectedField} onUpdate={handleUpdateField} />
         </motion.div>
       </div>
     </ProtectedLayout>

@@ -1,35 +1,47 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { getFieldColor, getFieldMeta } from "@/utils/fieldConfig";
 
 export default function FieldCard({ field, isSelected, onSelect, onDelete }) {
+  const colors = getFieldColor(field.type);
+  const meta = getFieldMeta(field.type);
+
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.2 }}
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95, y: -6 }}
+      transition={{ duration: 0.25 }}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.995 }}
       onClick={() => onSelect(field.id)}
-      className={`group cursor-pointer rounded-xl border p-4 transition-all duration-200 ${
+      className={`group cursor-pointer rounded-xl border-l-4 border p-4 transition-all duration-200 ${
         isSelected
-          ? "border-indigo-400 bg-indigo-50/50 shadow-sm ring-1 ring-indigo-400/20 dark:border-indigo-500/50 dark:bg-indigo-500/10 dark:ring-indigo-500/10"
-          : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+          ? `${colors.selectedBorder} ${colors.selectedBg} border-l-4 shadow-md ring-1 ${colors.ring}`
+          : `border-slate-200 border-l-4 ${colors.border} bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700`
       }`}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-center gap-3">
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${colors.bg} ${colors.text} transition-all duration-200`}
+        >
+          {meta.icon}
+        </span>
+
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h4 className="truncate text-sm font-medium text-slate-900 dark:text-white">
+            <h4 className="truncate text-sm font-semibold text-slate-900 dark:text-white">
               {field.label}
             </h4>
             {field.required && (
-              <span className="shrink-0 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+              <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
                 Required
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+          <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
             {field.type.charAt(0).toUpperCase() + field.type.slice(1)}
             {field.placeholder && (
               <span className="ml-1.5 text-slate-300 dark:text-slate-600">
@@ -39,7 +51,7 @@ export default function FieldCard({ field, isSelected, onSelect, onDelete }) {
           </p>
         </div>
 
-        <div className="ml-3 flex shrink-0 items-center gap-1 opacity-0 transition-all duration-200 group-hover:opacity-100">
+        <div className="ml-2 flex shrink-0 items-center gap-1 opacity-0 transition-all duration-200 group-hover:opacity-100">
           <button
             onClick={(e) => {
               e.stopPropagation();
