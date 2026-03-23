@@ -1,25 +1,88 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import ProtectedLayout from "@/components/ui/ProtectedLayout";
-import { getFormById } from "@/utils/storageHelpers";
+import FieldLibrary from "@/components/builder/FieldLibrary";
+import FormCanvas from "@/components/builder/FormCanvas";
+import FieldSettings from "@/components/builder/FieldSettings";
+import { getFormById, updateForm } from "@/utils/storageHelpers";
+import { setFields, addField, removeField, updateField } from "@/store/slices/formSlice";
+import { setSelectedField } from "@/store/slices/uiSlice";
 
 export default function FormBuilderPage() {
   const { id } = useParams();
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  const fields = useSelector((state) => state.form.fields);
+  const selectedFieldId = useSelector((state) => state.ui.selectedFieldId);
+
   const [form, setForm] = useState(null);
   const [notFound, setNotFound] = useState(false);
+
+  const selectedField = fields.find((f) => f.id === selectedFieldId) || null;
 
   useEffect(() => {
     const loaded = getFormById(id);
     if (loaded) {
       setForm(loaded);
+      dispatch(setFields(loaded.fields));
     } else {
       setNotFound(true);
     }
-  }, [id]);
+    return () => {
+      dispatch(setFields([]));
+      dispatch(setSelectedField(null));
+    };
+  }, [id, dispatch]);
+
+  useEffect(() => {
+    if (form && fields) {
+      updateForm(form.id, { fields });
+    }
+  }, [fields, form]);
+
+  function handleAddField(type) {
+    const defaultLabels = {
+      text: "Text Input",
+      email: "Email Address",
+      number: "Number",
+      textarea: "Long Text",
+      select: "Dropdown",
+      checkbox: "Checkbox",
+      radio: "Radio Group",
+    };
+
+    const newField = {
+      id: crypto.randomUUID(),
+      type,
+      label: defaultLabels[type] || type,
+      required: false,
+      placeholder: "",
+      validation: {},
+      options: type === "select" || type === "radio" ? ["Option 1", "Option 2"] : [],
+    };
+
+    dispatch(addField(newField));
+  }
+
+  function handleSelectField(fieldId) {
+    dispatch(setSelectedField(fieldId === selectedFieldId ? null : fieldId));
+  }
+
+  function handleDeleteField(fieldId) {
+    dispatch(removeField(fieldId));
+    if (selectedFieldId === fieldId) {
+      dispatch(setSelectedField(null));
+    }
+  }
+
+  function handleUpdateField(fieldId, updates) {
+    dispatch(updateField({ id: fieldId, updates }));
+  }
 
   if (notFound) {
     return (
@@ -75,21 +138,20 @@ export default function FormBuilderPage() {
 
   return (
     <ProtectedLayout>
-      <div className="space-y-6">
+      <div className="flex h-[calc(100vh-80px)] flex-col">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="flex items-center justify-between"
+          className="mb-4 flex shrink-0 items-center justify-between"
         >
           <div>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
               {form.name}
             </h2>
             <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
-              {form.fields.length}{" "}
-              {form.fields.length === 1 ? "field" : "fields"} &middot; Drag and
-              drop builder coming soon
+              {fields.length} {fields.length === 1 ? "field" : "fields"}
             </p>
           </div>
           <button
@@ -113,34 +175,26 @@ export default function FormBuilderPage() {
           </button>
         </motion.div>
 
+        {/* 3-Panel Layout */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.1 }}
-          className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900"
+          className="flex min-h-0 flex-1 gap-4"
         >
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
-            <svg
-              className="h-7 w-7 text-slate-400 dark:text-slate-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-            Builder coming soon
-          </h3>
-          <p className="mx-auto mt-2 max-w-sm text-sm text-slate-400 dark:text-slate-500">
-            The drag-and-drop form builder will be available here. You&apos;ll
-            be able to add fields, reorder them, and configure settings.
-          </p>
+          <FieldLibrary onAddField={handleAddField} />
+
+          <FormCanvas
+            fields={fields}
+            selectedFieldId={selectedFieldId}
+            onSelectField={handleSelectField}
+            onDeleteField={handleDeleteField}
+          />
+
+          <FieldSettings
+            field={selectedField}
+            onUpdate={handleUpdateField}
+          />
         </motion.div>
       </div>
     </ProtectedLayout>

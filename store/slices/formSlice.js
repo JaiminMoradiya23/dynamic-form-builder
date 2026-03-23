@@ -8,6 +8,12 @@ const formSlice = createSlice({
   name: "form",
   initialState,
   reducers: {
+    setFields(state, action) {
+      state.fields = action.payload;
+    },
+    clearFields(state) {
+      state.fields = [];
+    },
     addField(state, action) {
       state.fields.push(action.payload);
     },
@@ -25,6 +31,12 @@ const formSlice = createSlice({
   },
 });
 
-export const { addField, removeField, updateField, reorderFields } =
-  formSlice.actions;
+export const {
+  setFields,
+  clearFields,
+  addField,
+  removeField,
+  updateField,
+  reorderFields,
+} = formSlice.actions;
 export default formSlice.reducer;
