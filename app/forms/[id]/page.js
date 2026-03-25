@@ -4,18 +4,54 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import ProtectedLayout from "@/components/ui/ProtectedLayout";
 import FieldLibrary from "@/components/builder/FieldLibrary";
 import FormCanvas from "@/components/builder/FormCanvas";
 import FieldSettings from "@/components/builder/FieldSettings";
+import DragOverlayCard from "@/components/builder/DragOverlayCard";
 import { getFormById, updateForm } from "@/utils/storageHelpers";
 import {
   setFields,
   addField,
   removeField,
   updateField,
+  reorderFields,
 } from "@/store/slices/formSlice";
 import { setSelectedField } from "@/store/slices/uiSlice";
+
+const DEFAULT_LABELS = {
+  text: "Text Input",
+  email: "Email Address",
+  number: "Number",
+  textarea: "Long Text",
+  select: "Dropdown",
+  checkbox: "Checkbox",
+  radio: "Radio Group",
+};
+
+function createFieldObject(type) {
+  return {
+    id: crypto.randomUUID(),
+    type,
+    label: DEFAULT_LABELS[type] || type,
+    required: false,
+    placeholder: "",
+    validation: {},
+    options:
+      type === "select" || type === "radio"
+        ? ["Option 1", "Option 2"]
+        : [],
+  };
+}
 
 export default function FormBuilderPage() {
   const { id } = useParams();
@@ -30,10 +66,18 @@ export default function FormBuilderPage() {
   const [formName, setFormName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
   const [saveStatus, setSaveStatus] = useState("saved");
+  const [activeDrag, setActiveDrag] = useState(null);
   const nameInputRef = useRef(null);
   const saveTimeoutRef = useRef(null);
 
   const selectedField = fields.find((f) => f.id === selectedFieldId) || null;
+
+  // 5px distance before drag starts — prevents accidental drags when clicking
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+
+  // --- Data loading ---
 
   useEffect(() => {
     const loaded = getFormById(id);
@@ -49,6 +93,8 @@ export default function FormBuilderPage() {
       dispatch(setSelectedField(null));
     };
   }, [id, dispatch]);
+
+  // --- Auto-save ---
 
   const persistToStorage = useCallback(
     (fieldsToSave, nameToSave) => {
@@ -73,49 +119,25 @@ export default function FormBuilderPage() {
     return () => clearTimeout(saveTimeoutRef.current);
   }, []);
 
+  // --- Name editing ---
+
   function handleNameBlur() {
     setIsEditingName(false);
-    const trimmed = formName.trim();
-    if (!trimmed) {
-      setFormName(form.name);
-    }
+    if (!formName.trim()) setFormName(form.name);
   }
 
   function handleNameKeyDown(e) {
-    if (e.key === "Enter") {
-      nameInputRef.current?.blur();
-    }
+    if (e.key === "Enter") nameInputRef.current?.blur();
     if (e.key === "Escape") {
       setFormName(form.name);
       setIsEditingName(false);
     }
   }
 
+  // --- Field CRUD ---
+
   function handleAddField(type) {
-    const defaultLabels = {
-      text: "Text Input",
-      email: "Email Address",
-      number: "Number",
-      textarea: "Long Text",
-      select: "Dropdown",
-      checkbox: "Checkbox",
-      radio: "Radio Group",
-    };
-
-    const newField = {
-      id: crypto.randomUUID(),
-      type,
-      label: defaultLabels[type] || type,
-      required: false,
-      placeholder: "",
-      validation: {},
-      options:
-        type === "select" || type === "radio"
-          ? ["Option 1", "Option 2"]
-          : [],
-    };
-
-    dispatch(addField(newField));
+    dispatch(addField(createFieldObject(type)));
   }
 
   function handleSelectField(fieldId) {
@@ -124,14 +146,62 @@ export default function FormBuilderPage() {
 
   function handleDeleteField(fieldId) {
     dispatch(removeField(fieldId));
-    if (selectedFieldId === fieldId) {
-      dispatch(setSelectedField(null));
-    }
+    if (selectedFieldId === fieldId) dispatch(setSelectedField(null));
   }
 
   function handleUpdateField(fieldId, updates) {
     dispatch(updateField({ id: fieldId, updates }));
   }
+
+  // --- Drag & Drop ---
+
+  function handleDragStart(event) {
+    const { active } = event;
+    const data = active.data.current;
+
+    if (data?.source === "library") {
+      setActiveDrag({ source: "library", type: data.type });
+    } else if (data?.source === "canvas") {
+      setActiveDrag({
+        source: "canvas",
+        field: data.field,
+      });
+    }
+  }
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    setActiveDrag(null);
+
+    if (!active || !over) return;
+
+    const activeData = active.data.current;
+
+    // Drop from library onto canvas
+    if (activeData?.source === "library") {
+      const isOverCanvas =
+        over.id === "canvas" || over.data.current?.source === "canvas";
+      if (isOverCanvas) {
+        dispatch(addField(createFieldObject(activeData.type)));
+      }
+      return;
+    }
+
+    // Reorder within canvas
+    if (activeData?.source === "canvas" && active.id !== over.id) {
+      const oldIndex = fields.findIndex((f) => f.id === active.id);
+      const newIndex = fields.findIndex((f) => f.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        dispatch(reorderFields(arrayMove(fields, oldIndex, newIndex)));
+      }
+    }
+  }
+
+  function handleDragCancel() {
+    setActiveDrag(null);
+  }
+
+  // --- Render ---
 
   if (notFound) {
     return (
@@ -237,7 +307,9 @@ export default function FormBuilderPage() {
               <p className="text-sm text-slate-400 dark:text-slate-500">
                 {fields.length} {fields.length === 1 ? "field" : "fields"}
               </p>
-              <span className="text-slate-300 dark:text-slate-700">&middot;</span>
+              <span className="text-slate-300 dark:text-slate-700">
+                &middot;
+              </span>
               <AnimatePresence mode="wait">
                 <motion.span
                   key={saveStatus}
@@ -288,25 +360,48 @@ export default function FormBuilderPage() {
           </button>
         </motion.div>
 
-        {/* 3-Panel Layout */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.1 }}
-          className="flex min-h-0 flex-1 gap-4"
+        {/* 3-Panel Layout with DnD */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
-          <FieldLibrary onAddField={handleAddField} />
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.1 }}
+            className="flex min-h-0 flex-1 gap-4"
+          >
+            <FieldLibrary onAddField={handleAddField} />
 
-          <FormCanvas
-            fields={fields}
-            selectedFieldId={selectedFieldId}
-            onSelectField={handleSelectField}
-            onDeleteField={handleDeleteField}
-            onAddFirstField={() => handleAddField("text")}
-          />
+            <FormCanvas
+              fields={fields}
+              selectedFieldId={selectedFieldId}
+              onSelectField={handleSelectField}
+              onDeleteField={handleDeleteField}
+              onAddFirstField={() => handleAddField("text")}
+            />
 
-          <FieldSettings field={selectedField} onUpdate={handleUpdateField} />
-        </motion.div>
+            <FieldSettings
+              field={selectedField}
+              onUpdate={handleUpdateField}
+            />
+          </motion.div>
+
+          <DragOverlay dropAnimation={{ duration: 200 }}>
+            {activeDrag?.source === "library" && (
+              <DragOverlayCard type={activeDrag.type} />
+            )}
+            {activeDrag?.source === "canvas" && (
+              <DragOverlayCard
+                type={activeDrag.field.type}
+                label={activeDrag.field.label}
+              />
+            )}
+          </DragOverlay>
+        </DndContext>
       </div>
     </ProtectedLayout>
   );
