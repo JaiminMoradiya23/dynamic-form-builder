@@ -201,7 +201,7 @@ export default function FieldSettings({ field, onUpdate }) {
 
           {/* Validation */}
           <div>
-            <SectionHeading>Validation</SectionHeading>
+            <SectionHeading>Validations</SectionHeading>
             <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
               <div className="flex items-center gap-2">
                 <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -229,9 +229,9 @@ export default function FieldSettings({ field, onUpdate }) {
                       transition={{ duration: 0.15, delay: idx * 0.03 }}
                       className="flex items-center gap-2"
                     >
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                      {/* <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold text-slate-400 dark:text-slate-500">
                         {idx + 1}
-                      </span>
+                      </span> */}
                       <input
                         type="text"
                         value={opt}
