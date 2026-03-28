@@ -23,7 +23,6 @@ import {
   setFields,
   addField,
   removeField,
-  updateField,
   reorderFields,
 } from "@/store/slices/formSlice";
 import { setSelectedField } from "@/store/slices/uiSlice";
@@ -69,8 +68,6 @@ export default function FormBuilderPage() {
   const [activeDrag, setActiveDrag] = useState(null);
   const nameInputRef = useRef(null);
   const saveTimeoutRef = useRef(null);
-
-  const selectedField = fields.find((f) => f.id === selectedFieldId) || null;
 
   // 5px distance before drag starts — prevents accidental drags when clicking
   const sensors = useSensors(
@@ -147,10 +144,6 @@ export default function FormBuilderPage() {
   function handleDeleteField(fieldId) {
     dispatch(removeField(fieldId));
     if (selectedFieldId === fieldId) dispatch(setSelectedField(null));
-  }
-
-  function handleUpdateField(fieldId, updates) {
-    dispatch(updateField({ id: fieldId, updates }));
   }
 
   // --- Drag & Drop ---
@@ -384,10 +377,7 @@ export default function FormBuilderPage() {
               onAddFirstField={() => handleAddField("text")}
             />
 
-            <FieldSettings
-              field={selectedField}
-              onUpdate={handleUpdateField}
-            />
+            <FieldSettings />
           </motion.div>
 
           <DragOverlay dropAnimation={{ duration: 200 }}>

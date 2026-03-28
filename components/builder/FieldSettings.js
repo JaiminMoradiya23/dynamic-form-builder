@@ -1,25 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { Switch } from "@headlessui/react";
+import { updateField } from "@/store/slices/formSlice";
 import { getFieldColor, getFieldMeta } from "@/utils/fieldConfig";
 
-function SectionHeading({ children }) {
+const INPUT_CLASS =
+  "w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:bg-slate-800 dark:focus:ring-indigo-500/20";
+
+function SectionHeading({ icon, children }) {
   return (
     <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+      {icon}
       {children}
     </h4>
   );
 }
 
-export default function FieldSettings({ field, onUpdate }) {
+function SectionDivider() {
+  return <div className="border-t border-slate-100 dark:border-slate-800" />;
+}
+
+function buildValidationObject(minLen, maxLen, pat) {
+  const v = {};
+  const minNum = minLen === "" ? undefined : Number(minLen);
+  const maxNum = maxLen === "" ? undefined : Number(maxLen);
+  if (minNum != null && !isNaN(minNum) && minNum >= 0) v.minLength = minNum;
+  if (maxNum != null && !isNaN(maxNum) && maxNum >= 0) v.maxLength = maxNum;
+  if (pat) v.pattern = pat;
+  return v;
+}
+
+export default function FieldSettings() {
+  const dispatch = useDispatch();
+  const selectedFieldId = useSelector((state) => state.ui.selectedFieldId);
+  const fields = useSelector((state) => state.form.fields);
+
+  const field = useMemo(
+    () => fields.find((f) => f.id === selectedFieldId) || null,
+    [fields, selectedFieldId]
+  );
+
   const [label, setLabel] = useState("");
   const [placeholder, setPlaceholder] = useState("");
   const [required, setRequired] = useState(false);
   const [options, setOptions] = useState([]);
+  const [minLength, setMinLength] = useState("");
+  const [maxLength, setMaxLength] = useState("");
+  const [pattern, setPattern] = useState("");
 
   const hasOptions = field?.type === "select" || field?.type === "radio";
+  const supportsValidation = useMemo(
+    () => ["text", "email", "number", "textarea"].includes(field?.type),
+    [field?.type]
+  );
 
   useEffect(() => {
     if (field) {
@@ -27,30 +63,72 @@ export default function FieldSettings({ field, onUpdate }) {
       setPlaceholder(field.placeholder || "");
       setRequired(field.required || false);
       setOptions(field.options || []);
+      setMinLength(field.validation?.minLength ?? "");
+      setMaxLength(field.validation?.maxLength ?? "");
+      setPattern(field.validation?.pattern ?? "");
     }
-  }, [field]);
+  }, [field?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleUpdate(key, value) {
-    onUpdate(field.id, { [key]: value });
+  const dispatchUpdate = useCallback(
+    (updates) => {
+      if (!field) return;
+      dispatch(updateField({ id: field.id, updates }));
+    },
+    [dispatch, field]
+  );
+
+  function handleLabelChange(e) {
+    const val = e.target.value;
+    setLabel(val);
+    dispatchUpdate({ label: val });
+  }
+
+  function handlePlaceholderChange(e) {
+    const val = e.target.value;
+    setPlaceholder(val);
+    dispatchUpdate({ placeholder: val });
+  }
+
+  function handleRequiredChange(val) {
+    setRequired(val);
+    dispatchUpdate({ required: val });
+  }
+
+  function handleMinLengthChange(e) {
+    const val = e.target.value;
+    setMinLength(val);
+    dispatchUpdate({ validation: buildValidationObject(val, maxLength, pattern) });
+  }
+
+  function handleMaxLengthChange(e) {
+    const val = e.target.value;
+    setMaxLength(val);
+    dispatchUpdate({ validation: buildValidationObject(minLength, val, pattern) });
+  }
+
+  function handlePatternChange(e) {
+    const val = e.target.value;
+    setPattern(val);
+    dispatchUpdate({ validation: buildValidationObject(minLength, maxLength, val) });
   }
 
   function handleAddOption() {
     const updated = [...options, `Option ${options.length + 1}`];
     setOptions(updated);
-    handleUpdate("options", updated);
+    dispatchUpdate({ options: updated });
   }
 
   function handleOptionChange(index, value) {
     const updated = [...options];
     updated[index] = value;
     setOptions(updated);
-    handleUpdate("options", updated);
+    dispatchUpdate({ options: updated });
   }
 
   function handleRemoveOption(index) {
     const updated = options.filter((_, i) => i !== index);
     setOptions(updated);
-    handleUpdate("options", updated);
+    dispatchUpdate({ options: updated });
   }
 
   if (!field) {
@@ -103,7 +181,7 @@ export default function FieldSettings({ field, onUpdate }) {
 
   return (
     <div className="flex h-full w-[300px] shrink-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      {/* Header with field type accent */}
+      {/* Header */}
       <div className="border-b border-slate-200 p-6 dark:border-slate-800">
         <div className="flex items-center gap-3">
           <span
@@ -115,9 +193,7 @@ export default function FieldSettings({ field, onUpdate }) {
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
               Field Settings
             </h3>
-            <p className="truncate text-sm text-slate-400">
-              {meta.label}
-            </p>
+            <p className="truncate text-sm text-slate-400">{meta.label}</p>
           </div>
         </div>
       </div>
@@ -131,9 +207,72 @@ export default function FieldSettings({ field, onUpdate }) {
           transition={{ duration: 0.2 }}
           className="flex-1 space-y-6 overflow-y-auto p-6"
         >
+          {/* Field Info */}
+          <div>
+            <SectionHeading
+              icon={
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                  />
+                </svg>
+              }
+            >
+              Field Info
+            </SectionHeading>
+            <div className={`flex items-center gap-3 rounded-lg border p-3 ${colors.bg} border-transparent`}>
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${colors.iconBg} ${colors.text}`}
+              >
+                {meta.icon}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  {meta.label}
+                </p>
+                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                  {meta.description}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <SectionDivider />
+
           {/* Basic Settings */}
           <div>
-            <SectionHeading>Basic Settings</SectionHeading>
+            <SectionHeading
+              icon={
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+              }
+            >
+              Basic Settings
+            </SectionHeading>
             <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -142,11 +281,8 @@ export default function FieldSettings({ field, onUpdate }) {
                 <input
                   type="text"
                   value={label}
-                  onChange={(e) => {
-                    setLabel(e.target.value);
-                    handleUpdate("label", e.target.value);
-                  }}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:bg-slate-800 dark:focus:ring-indigo-500/20"
+                  onChange={handleLabelChange}
+                  className={INPUT_CLASS}
                   placeholder="Field label"
                 />
               </div>
@@ -157,11 +293,8 @@ export default function FieldSettings({ field, onUpdate }) {
                 <input
                   type="text"
                   value={placeholder}
-                  onChange={(e) => {
-                    setPlaceholder(e.target.value);
-                    handleUpdate("placeholder", e.target.value);
-                  }}
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:bg-slate-800 dark:focus:ring-indigo-500/20"
+                  onChange={handlePlaceholderChange}
+                  className={INPUT_CLASS}
                   placeholder="Placeholder text"
                 />
               </div>
@@ -176,10 +309,7 @@ export default function FieldSettings({ field, onUpdate }) {
                 </div>
                 <Switch
                   checked={required}
-                  onChange={(val) => {
-                    setRequired(val);
-                    handleUpdate("required", val);
-                  }}
+                  onChange={handleRequiredChange}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-200 ${
                     required
                       ? "bg-indigo-500"
@@ -196,71 +326,172 @@ export default function FieldSettings({ field, onUpdate }) {
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="border-t border-slate-100 dark:border-slate-800" />
-
-          {/* Validation */}
-          <div>
-            <SectionHeading>Validations</SectionHeading>
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-4 dark:border-slate-700 dark:bg-slate-800/50">
-              <div className="flex items-center gap-2">
-                <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-                </svg>
-                <p className="text-xs text-slate-400 dark:text-slate-500">
-                  Validation rules coming soon
-                </p>
+          {/* Validation Settings */}
+          {supportsValidation && (
+            <>
+              <SectionDivider />
+              <div>
+                <SectionHeading
+                  icon={
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"
+                      />
+                    </svg>
+                  }
+                >
+                  Validation
+                </SectionHeading>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                        Min Length
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={minLength}
+                        onChange={handleMinLengthChange}
+                        className={INPUT_CLASS}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                        Max Length
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={maxLength}
+                        onChange={handleMaxLengthChange}
+                        className={INPUT_CLASS}
+                        placeholder="∞"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                      Pattern (Regex)
+                    </label>
+                    <input
+                      type="text"
+                      value={pattern}
+                      onChange={handlePatternChange}
+                      className={`${INPUT_CLASS} font-mono text-xs`}
+                      placeholder="e.g. ^[a-zA-Z]+$"
+                    />
+                    <p className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                      Regular expression for input validation
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
 
           {/* Options (for select/radio) */}
           {hasOptions && (
             <>
-              <div className="border-t border-slate-100 dark:border-slate-800" />
+              <SectionDivider />
               <div>
-                <SectionHeading>Options</SectionHeading>
-                <div className="space-y-2">
-                  {options.map((opt, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -6 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.15, delay: idx * 0.03 }}
-                      className="flex items-center gap-2"
+                <SectionHeading
+                  icon={
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
                     >
-                      {/* <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                        {idx + 1}
-                      </span> */}
-                      <input
-                        type="text"
-                        value={opt}
-                        onChange={(e) => handleOptionChange(idx, e.target.value)}
-                        className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:bg-slate-800 dark:focus:ring-indigo-500/20"
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
                       />
-                      <button
-                        onClick={() => handleRemoveOption(idx)}
-                        className="rounded-lg p-1.5 text-slate-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                    </svg>
+                  }
+                >
+                  Options
+                </SectionHeading>
+                <div className="space-y-2">
+                  <AnimatePresence initial={false}>
+                    {options.map((opt, idx) => (
+                      <motion.div
+                        key={`${field.id}-opt-${idx}`}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="flex items-center gap-2"
                       >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </motion.div>
-                  ))}
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                          {idx + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={opt}
+                          onChange={(e) =>
+                            handleOptionChange(idx, e.target.value)
+                          }
+                          className={`flex-1 ${INPUT_CLASS}`}
+                        />
+                        <button
+                          onClick={() => handleRemoveOption(idx)}
+                          disabled={options.length <= 1}
+                          className="rounded-lg p-1.5 text-slate-400 transition-all duration-200 hover:bg-red-50 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6 18 18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
                   {options.length === 0 && (
                     <p className="py-3 text-center text-xs text-slate-400">
                       No options yet
                     </p>
                   )}
+
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
                     onClick={handleAddOption}
                     className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-200 py-2.5 text-xs font-medium text-indigo-500 transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-700 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-500/10"
                   >
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
                     </svg>
                     Add option
                   </motion.button>
