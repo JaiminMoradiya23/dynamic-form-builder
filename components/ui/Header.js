@@ -32,7 +32,7 @@ export default function Header({ onMenuToggle }) {
   };
 
   return (
-    <header className="sticky top-0 z-10 flex h-[70px] items-center justify-between border-b border-slate-200/80 bg-white/80 px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
+    <header className="sticky top-0 z-10 flex h-[70px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
       <div className="flex items-center gap-4">
         <button
           onClick={onMenuToggle}

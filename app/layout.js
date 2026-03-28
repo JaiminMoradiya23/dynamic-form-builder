@@ -23,7 +23,7 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full overflow-hidden antialiased`}
     >
       <head>
         <script
@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="min-h-full">
+      <body className="h-full min-h-0 overflow-hidden">
         <ReduxProvider>
           <ThemeProvider>{children}</ThemeProvider>
         </ReduxProvider>
