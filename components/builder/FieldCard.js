@@ -17,7 +17,7 @@ export default function FieldCard({ field, isSelected, onSelect, onDelete }) {
       onClick={() => onSelect(field.id)}
       className={`group flex cursor-pointer items-center gap-3 rounded-xl border p-4 shadow-sm transition-all duration-200 hover:scale-[1.01] hover:shadow-md ${
         isSelected
-          ? "border-2 border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
+          ? "border border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
           : "border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
       }`}
     >
