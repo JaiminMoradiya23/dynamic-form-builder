@@ -17,6 +17,7 @@ import ProtectedLayout from "@/components/ui/ProtectedLayout";
 import FieldLibrary from "@/components/builder/FieldLibrary";
 import FormCanvas from "@/components/builder/FormCanvas";
 import FieldSettings from "@/components/builder/FieldSettings";
+import FormPreview from "@/components/builder/FormPreview";
 import DragOverlayCard from "@/components/builder/DragOverlayCard";
 import { getFormById, updateForm } from "@/utils/storageHelpers";
 import {
@@ -25,7 +26,8 @@ import {
   removeField,
   reorderFields,
 } from "@/store/slices/formSlice";
-import { setSelectedField } from "@/store/slices/uiSlice";
+import { setSelectedField, setPreviewMode } from "@/store/slices/uiSlice";
+import { Field, Input, Label } from "@headlessui/react";
 
 const DEFAULT_LABELS = {
   text: "Text Input",
@@ -36,6 +38,9 @@ const DEFAULT_LABELS = {
   checkbox: "Checkbox",
   radio: "Radio Group",
 };
+
+const INPUT_CLASS =
+  "w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 data-[focus]:border-indigo-400 data-[focus]:bg-white data-[focus]:ring-2 data-[focus]:ring-indigo-400/20 data-[hover]:border-slate-300 data-[invalid]:border-red-300 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-400/20 dark:data-[focus]:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:data-[focus]:border-indigo-500 dark:data-[focus]:ring-indigo-500/20 dark:data-[hover]:border-slate-600 dark:data-[invalid]:border-red-500/50 dark:data-[invalid]:data-[focus]:border-red-500 dark:data-[invalid]:data-[focus]:ring-red-500/20";
 
 function createFieldObject(type) {
   return {
@@ -59,6 +64,7 @@ export default function FormBuilderPage() {
 
   const fields = useSelector((state) => state.form.fields);
   const selectedFieldId = useSelector((state) => state.ui.selectedFieldId);
+  const isPreviewMode = useSelector((state) => state.ui.isPreviewMode);
 
   const [form, setForm] = useState(null);
   const [notFound, setNotFound] = useState(false);
@@ -88,6 +94,7 @@ export default function FormBuilderPage() {
     return () => {
       dispatch(setFields([]));
       dispatch(setSelectedField(null));
+      dispatch(setPreviewMode(false));
     };
   }, [id, dispatch]);
 
@@ -261,16 +268,18 @@ export default function FormBuilderPage() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
               {isEditingName ? (
-                <input
-                  ref={nameInputRef}
-                  type="text"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  onBlur={handleNameBlur}
-                  onKeyDown={handleNameKeyDown}
-                  autoFocus
-                  className="w-full max-w-sm rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-xl font-semibold text-slate-900 outline-none ring-2 ring-indigo-400/20 transition-all duration-200 dark:border-indigo-500/50 dark:bg-slate-800 dark:text-white dark:ring-indigo-500/20"
-                />
+                <Field>
+                  <Input
+                    ref={nameInputRef}
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    onBlur={handleNameBlur}
+                    onKeyDown={handleNameKeyDown}
+                    className={INPUT_CLASS}
+                    autoFocus
+                  />
+                </Field>
               ) : (
                 <button
                   onClick={() => setIsEditingName(true)}
@@ -332,66 +341,140 @@ export default function FormBuilderPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => router.push("/forms")}
-            className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
+          <div className="flex shrink-0 items-center gap-3">
+            {/* Builder / Preview Toggle */}
+            <div className="flex rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800">
+              <button
+                onClick={() => dispatch(setPreviewMode(false))}
+                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${!isPreviewMode
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                  }`}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                  />
+                </svg>
+                Builder
+              </button>
+              <button
+                onClick={() => dispatch(setPreviewMode(true))}
+                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${isPreviewMode
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                  }`}
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                  />
+                </svg>
+                Preview
+              </button>
+            </div>
+
+            <button
+              onClick={() => router.push("/forms")}
+              className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-              />
-            </svg>
-            Back to Forms
-          </button>
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                />
+              </svg>
+              Back to Forms
+            </button>
+          </div>
         </motion.div>
 
-        {/* 3-Panel Layout with DnD */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: 0.1 }}
-            className="flex min-h-0 flex-1 gap-4"
-          >
-            <FieldLibrary onAddField={handleAddField} />
+        {/* Builder / Preview Content */}
+        <AnimatePresence mode="wait">
+          {isPreviewMode ? (
+            <motion.div
+              key="preview"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <FormPreview formName={formName} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="builder"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="min-h-0 flex-1"
+            >
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+              >
+                <div className="flex h-full gap-4">
+                  <FieldLibrary onAddField={handleAddField} />
 
-            <FormCanvas
-              fields={fields}
-              selectedFieldId={selectedFieldId}
-              onSelectField={handleSelectField}
-              onDeleteField={handleDeleteField}
-              onAddFirstField={() => handleAddField("text")}
-            />
+                  <FormCanvas
+                    fields={fields}
+                    selectedFieldId={selectedFieldId}
+                    onSelectField={handleSelectField}
+                    onDeleteField={handleDeleteField}
+                    onAddFirstField={() => handleAddField("text")}
+                  />
 
-            <FieldSettings />
-          </motion.div>
+                  <FieldSettings />
+                </div>
 
-          <DragOverlay dropAnimation={{ duration: 200 }}>
-            {activeDrag?.source === "library" && (
-              <DragOverlayCard type={activeDrag.type} />
-            )}
-            {activeDrag?.source === "canvas" && (
-              <DragOverlayCard
-                type={activeDrag.field.type}
-                label={activeDrag.field.label}
-              />
-            )}
-          </DragOverlay>
-        </DndContext>
+                <DragOverlay dropAnimation={{ duration: 200 }}>
+                  {activeDrag?.source === "library" && (
+                    <DragOverlayCard type={activeDrag.type} />
+                  )}
+                  {activeDrag?.source === "canvas" && (
+                    <DragOverlayCard
+                      type={activeDrag.field.type}
+                      label={activeDrag.field.label}
+                    />
+                  )}
+                </DragOverlay>
+              </DndContext>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </ProtectedLayout>
   );

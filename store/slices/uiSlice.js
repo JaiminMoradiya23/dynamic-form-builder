@@ -12,11 +12,15 @@ const uiSlice = createSlice({
     setSelectedField(state, action) {
       state.selectedFieldId = action.payload;
     },
+    setPreviewMode(state, action) {
+      state.isPreviewMode = action.payload;
+    },
     togglePreviewMode(state) {
       state.isPreviewMode = !state.isPreviewMode;
     },
   },
 });
 
-export const { setSelectedField, togglePreviewMode } = uiSlice.actions;
+export const { setSelectedField, setPreviewMode, togglePreviewMode } =
+  uiSlice.actions;
 export default uiSlice.reducer;

@@ -3,12 +3,18 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { Switch } from "@headlessui/react";
+import {
+  Field,
+  Label,
+  Description,
+  Input,
+  Switch,
+} from "@headlessui/react";
 import { updateField } from "@/store/slices/formSlice";
 import { getFieldColor, getFieldMeta } from "@/utils/fieldConfig";
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-400/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-indigo-500 dark:focus:bg-slate-800 dark:focus:ring-indigo-500/20";
+  "w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 data-[focus]:border-indigo-400 data-[focus]:bg-white data-[focus]:ring-2 data-[focus]:ring-indigo-400/20 data-[hover]:border-slate-300 data-[invalid]:border-red-300 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-400/20 dark:data-[focus]:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:data-[focus]:border-indigo-500 dark:data-[focus]:ring-indigo-500/20 dark:data-[hover]:border-slate-600 dark:data-[invalid]:border-red-500/50 dark:data-[invalid]:data-[focus]:border-red-500 dark:data-[invalid]:data-[focus]:ring-red-500/20";
 
 function SectionHeading({ icon, children }) {
   return (
@@ -228,7 +234,9 @@ export default function FieldSettings() {
             >
               Field Info
             </SectionHeading>
-            <div className={`flex items-center gap-3 rounded-lg border p-3 ${colors.bg} border-transparent`}>
+            <div
+              className={`flex items-center gap-3 rounded-lg border border-transparent p-3 ${colors.bg}`}
+            >
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${colors.iconBg} ${colors.text}`}
               >
@@ -274,55 +282,52 @@ export default function FieldSettings() {
               Basic Settings
             </SectionHeading>
             <div className="space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              {/* Label Field */}
+              <Field>
+                <Label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Label
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   value={label}
                   onChange={handleLabelChange}
                   className={INPUT_CLASS}
                   placeholder="Field label"
                 />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              </Field>
+
+              {/* Placeholder Field */}
+              <Field>
+                <Label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Placeholder
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   value={placeholder}
                   onChange={handlePlaceholderChange}
                   className={INPUT_CLASS}
                   placeholder="Placeholder text"
                 />
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+              </Field>
+
+              {/* Required Toggle */}
+              <Field className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                 <div>
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Required
-                  </p>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  </Label>
+                  <Description className="mt-0.5 text-xs text-slate-400">
                     Mark as mandatory
-                  </p>
+                  </Description>
                 </div>
                 <Switch
                   checked={required}
                   onChange={handleRequiredChange}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-200 ${
-                    required
-                      ? "bg-indigo-500"
-                      : "bg-slate-200 dark:bg-slate-700"
-                  }`}
+                  className="group relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-200 transition-all duration-200 data-[checked]:bg-indigo-500 dark:bg-slate-700"
                 >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-all duration-200 ${
-                      required ? "translate-x-5" : "translate-x-0"
-                    }`}
-                  />
+                  <span className="pointer-events-none inline-block h-5 w-5 translate-x-0 transform rounded-full bg-white shadow-sm ring-0 transition-all duration-200 group-data-[checked]:translate-x-5" />
                 </Switch>
-              </div>
+              </Field>
             </div>
           </div>
 
@@ -352,11 +357,12 @@ export default function FieldSettings() {
                 </SectionHeading>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                    {/* Min Length */}
+                    <Field>
+                      <Label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
                         Min Length
-                      </label>
-                      <input
+                      </Label>
+                      <Input
                         type="number"
                         min="0"
                         value={minLength}
@@ -364,12 +370,14 @@ export default function FieldSettings() {
                         className={INPUT_CLASS}
                         placeholder="0"
                       />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
+                    </Field>
+
+                    {/* Max Length */}
+                    <Field>
+                      <Label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
                         Max Length
-                      </label>
-                      <input
+                      </Label>
+                      <Input
                         type="number"
                         min="0"
                         value={maxLength}
@@ -377,23 +385,25 @@ export default function FieldSettings() {
                         className={INPUT_CLASS}
                         placeholder="∞"
                       />
-                    </div>
+                    </Field>
                   </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
+
+                  {/* Pattern */}
+                  <Field>
+                    <Label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
                       Pattern (Regex)
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       type="text"
                       value={pattern}
                       onChange={handlePatternChange}
                       className={`${INPUT_CLASS} font-mono text-xs`}
                       placeholder="e.g. ^[a-zA-Z]+$"
                     />
-                    <p className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                    <Description className="mt-1.5 text-[11px] text-slate-400 dark:text-slate-500">
                       Regular expression for input validation
-                    </p>
-                  </div>
+                    </Description>
+                  </Field>
                 </div>
               </div>
             </>
@@ -437,7 +447,7 @@ export default function FieldSettings() {
                         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-[10px] font-bold text-slate-400 dark:text-slate-500">
                           {idx + 1}
                         </span>
-                        <input
+                        <Input
                           type="text"
                           value={opt}
                           onChange={(e) =>
