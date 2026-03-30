@@ -28,6 +28,18 @@ const formSlice = createSlice({
     reorderFields(state, action) {
       state.fields = action.payload;
     },
+    duplicateField(state, action) {
+      const sourceId = action.payload;
+      const index = state.fields.findIndex((f) => f.id === sourceId);
+      if (index === -1) return;
+      const source = state.fields[index];
+      const copy = {
+        ...JSON.parse(JSON.stringify(source)),
+        id: crypto.randomUUID(),
+        label: `${source.label} (Copy)`,
+      };
+      state.fields.splice(index + 1, 0, copy);
+    },
   },
 });
 
@@ -38,5 +50,6 @@ export const {
   removeField,
   updateField,
   reorderFields,
+  duplicateField,
 } = formSlice.actions;
 export default formSlice.reducer;

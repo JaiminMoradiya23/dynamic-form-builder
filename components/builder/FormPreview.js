@@ -379,16 +379,23 @@ export default function FormPreview({ formName }) {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {fields.map((field) => (
-              <PreviewField
-                key={field.id}
-                field={field}
-                register={register}
-                control={control}
-                error={errors[field.id]}
-              />
-            ))}
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-wrap gap-x-4 gap-y-6">
+              {fields.map((field) => {
+                const w = field.layout?.width || 100;
+                const widthMap = { 100: "100%", 50: "calc(50% - 8px)", 33: "calc(33.333% - 11px)" };
+                return (
+                  <div key={field.id} style={{ width: widthMap[w] || "100%" }}>
+                    <PreviewField
+                      field={field}
+                      register={register}
+                      control={control}
+                      error={errors[field.id]}
+                    />
+                  </div>
+                );
+              })}
+            </div>
 
             {/* Submit Area */}
             <div className="flex items-center gap-4 border-t border-slate-100 pt-6 dark:border-slate-800">

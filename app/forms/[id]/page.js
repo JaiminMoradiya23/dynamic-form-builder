@@ -19,15 +19,17 @@ import FormCanvas from "@/components/builder/FormCanvas";
 import FieldSettings from "@/components/builder/FieldSettings";
 import FormPreview from "@/components/builder/FormPreview";
 import DragOverlayCard from "@/components/builder/DragOverlayCard";
+import JsonExportModal from "@/components/builder/JsonExportModal";
 import { getFormById, updateForm } from "@/utils/storageHelpers";
 import {
   setFields,
   addField,
   removeField,
   reorderFields,
+  duplicateField,
 } from "@/store/slices/formSlice";
 import { setSelectedField, setPreviewMode } from "@/store/slices/uiSlice";
-import { Field, Input, Label } from "@headlessui/react";
+import { Field, Input } from "@headlessui/react";
 
 const DEFAULT_LABELS = {
   text: "Text Input",
@@ -40,7 +42,7 @@ const DEFAULT_LABELS = {
 };
 
 const INPUT_CLASS =
-  "w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 data-[focus]:border-indigo-400 data-[focus]:bg-white data-[focus]:ring-2 data-[focus]:ring-indigo-400/20 data-[hover]:border-slate-300 data-[invalid]:border-red-300 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-400/20 dark:data-[focus]:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:data-[focus]:border-indigo-500 dark:data-[focus]:ring-indigo-500/20 dark:data-[hover]:border-slate-600 dark:data-[invalid]:border-red-500/50 dark:data-[invalid]:data-[focus]:border-red-500 dark:data-[invalid]:data-[focus]:ring-red-500/20";
+  "w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 data-[focus]:border-indigo-400 data-[focus]:bg-white data-[focus]:ring-2 data-[focus]:ring-indigo-400/20 data-[hover]:border-slate-300 dark:data-[focus]:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:data-[focus]:border-indigo-500 dark:data-[focus]:ring-indigo-500/20 dark:data-[hover]:border-slate-600";
 
 function createFieldObject(type) {
   return {
@@ -54,6 +56,7 @@ function createFieldObject(type) {
       type === "select" || type === "radio"
         ? ["Option 1", "Option 2"]
         : [],
+    layout: { width: 100 },
   };
 }
 
@@ -72,10 +75,10 @@ export default function FormBuilderPage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [saveStatus, setSaveStatus] = useState("saved");
   const [activeDrag, setActiveDrag] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const nameInputRef = useRef(null);
   const saveTimeoutRef = useRef(null);
 
-  // 5px distance before drag starts — prevents accidental drags when clicking
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
@@ -153,6 +156,10 @@ export default function FormBuilderPage() {
     if (selectedFieldId === fieldId) dispatch(setSelectedField(null));
   }
 
+  function handleDuplicateField(fieldId) {
+    dispatch(duplicateField(fieldId));
+  }
+
   // --- Drag & Drop ---
 
   function handleDragStart(event) {
@@ -177,7 +184,6 @@ export default function FormBuilderPage() {
 
     const activeData = active.data.current;
 
-    // Drop from library onto canvas
     if (activeData?.source === "library") {
       const isOverCanvas =
         over.id === "canvas" || over.data.current?.source === "canvas";
@@ -187,7 +193,6 @@ export default function FormBuilderPage() {
       return;
     }
 
-    // Reorder within canvas
     if (activeData?.source === "canvas" && active.id !== over.id) {
       const oldIndex = fields.findIndex((f) => f.id === active.id);
       const newIndex = fields.findIndex((f) => f.id === over.id);
@@ -342,14 +347,36 @@ export default function FormBuilderPage() {
           </div>
 
           <div className="flex shrink-0 items-center gap-3">
+            {/* Export JSON */}
+            <button
+              onClick={() => setExportOpen(true)}
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"
+                />
+              </svg>
+              <span className="hidden sm:inline">Export JSON</span>
+            </button>
+
             {/* Builder / Preview Toggle */}
             <div className="flex rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800">
               <button
                 onClick={() => dispatch(setPreviewMode(false))}
-                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${!isPreviewMode
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-                  }`}
+                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
+                  !isPreviewMode
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                }`}
               >
                 <svg
                   className="h-4 w-4"
@@ -368,10 +395,11 @@ export default function FormBuilderPage() {
               </button>
               <button
                 onClick={() => dispatch(setPreviewMode(true))}
-                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${isPreviewMode
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
-                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
-                  }`}
+                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
+                  isPreviewMode
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                    : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                }`}
               >
                 <svg
                   className="h-4 w-4"
@@ -412,7 +440,7 @@ export default function FormBuilderPage() {
                   d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
                 />
               </svg>
-              Back to Forms
+              Back
             </button>
           </div>
         </motion.div>
@@ -454,6 +482,7 @@ export default function FormBuilderPage() {
                     selectedFieldId={selectedFieldId}
                     onSelectField={handleSelectField}
                     onDeleteField={handleDeleteField}
+                    onDuplicateField={handleDuplicateField}
                     onAddFirstField={() => handleAddField("text")}
                   />
 
@@ -476,6 +505,13 @@ export default function FormBuilderPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* JSON Export Modal */}
+      <JsonExportModal
+        isOpen={exportOpen}
+        onClose={() => setExportOpen(false)}
+        formName={formName}
+      />
     </ProtectedLayout>
   );
 }

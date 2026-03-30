@@ -13,6 +13,7 @@ export default function FormCanvas({
   selectedFieldId,
   onSelectField,
   onDeleteField,
+  onDuplicateField,
   onAddFirstField,
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
@@ -115,7 +116,7 @@ export default function FormCanvas({
         items={fields.map((f) => f.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-3">
+        <div className="flex flex-wrap gap-3">
           <AnimatePresence mode="popLayout">
             {fields.map((field) => (
               <SortableFieldCard
@@ -124,6 +125,7 @@ export default function FormCanvas({
                 isSelected={selectedFieldId === field.id}
                 onSelect={onSelectField}
                 onDelete={onDeleteField}
+                onDuplicate={onDuplicateField}
               />
             ))}
           </AnimatePresence>

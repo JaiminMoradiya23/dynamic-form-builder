@@ -9,12 +9,20 @@ import {
   Description,
   Input,
   Switch,
+  RadioGroup,
+  Radio,
 } from "@headlessui/react";
 import { updateField } from "@/store/slices/formSlice";
 import { getFieldColor, getFieldMeta } from "@/utils/fieldConfig";
 
 const INPUT_CLASS =
   "w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 data-[focus]:border-indigo-400 data-[focus]:bg-white data-[focus]:ring-2 data-[focus]:ring-indigo-400/20 data-[hover]:border-slate-300 data-[invalid]:border-red-300 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-400/20 dark:data-[focus]:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:data-[focus]:border-indigo-500 dark:data-[focus]:ring-indigo-500/20 dark:data-[hover]:border-slate-600 dark:data-[invalid]:border-red-500/50 dark:data-[invalid]:data-[focus]:border-red-500 dark:data-[invalid]:data-[focus]:ring-red-500/20";
+
+const WIDTH_OPTIONS = [
+  { value: 100, label: "Full Width", icon: "100%" },
+  { value: 50, label: "Half Width", icon: "50%" },
+  { value: 33, label: "One Third", icon: "33%" },
+];
 
 function SectionHeading({ icon, children }) {
   return (
@@ -56,6 +64,7 @@ export default function FieldSettings() {
   const [minLength, setMinLength] = useState("");
   const [maxLength, setMaxLength] = useState("");
   const [pattern, setPattern] = useState("");
+  const [fieldWidth, setFieldWidth] = useState(100);
 
   const hasOptions = field?.type === "select" || field?.type === "radio";
   const supportsValidation = useMemo(
@@ -72,6 +81,7 @@ export default function FieldSettings() {
       setMinLength(field.validation?.minLength ?? "");
       setMaxLength(field.validation?.maxLength ?? "");
       setPattern(field.validation?.pattern ?? "");
+      setFieldWidth(field.layout?.width ?? 100);
     }
   }, [field?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -100,22 +110,33 @@ export default function FieldSettings() {
     dispatchUpdate({ required: val });
   }
 
+  function handleWidthChange(val) {
+    setFieldWidth(val);
+    dispatchUpdate({ layout: { width: val } });
+  }
+
   function handleMinLengthChange(e) {
     const val = e.target.value;
     setMinLength(val);
-    dispatchUpdate({ validation: buildValidationObject(val, maxLength, pattern) });
+    dispatchUpdate({
+      validation: buildValidationObject(val, maxLength, pattern),
+    });
   }
 
   function handleMaxLengthChange(e) {
     const val = e.target.value;
     setMaxLength(val);
-    dispatchUpdate({ validation: buildValidationObject(minLength, val, pattern) });
+    dispatchUpdate({
+      validation: buildValidationObject(minLength, val, pattern),
+    });
   }
 
   function handlePatternChange(e) {
     const val = e.target.value;
     setPattern(val);
-    dispatchUpdate({ validation: buildValidationObject(minLength, maxLength, val) });
+    dispatchUpdate({
+      validation: buildValidationObject(minLength, maxLength, val),
+    });
   }
 
   function handleAddOption() {
@@ -282,7 +303,6 @@ export default function FieldSettings() {
               Basic Settings
             </SectionHeading>
             <div className="space-y-4">
-              {/* Label Field */}
               <Field>
                 <Label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Label
@@ -296,7 +316,6 @@ export default function FieldSettings() {
                 />
               </Field>
 
-              {/* Placeholder Field */}
               <Field>
                 <Label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Placeholder
@@ -310,7 +329,6 @@ export default function FieldSettings() {
                 />
               </Field>
 
-              {/* Required Toggle */}
               <Field className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
                 <div>
                   <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -329,6 +347,54 @@ export default function FieldSettings() {
                 </Switch>
               </Field>
             </div>
+          </div>
+
+          <SectionDivider />
+
+          {/* Layout - Field Width */}
+          <div>
+            <SectionHeading
+              icon={
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z"
+                  />
+                </svg>
+              }
+            >
+              Layout
+            </SectionHeading>
+            <RadioGroup
+              value={fieldWidth}
+              onChange={handleWidthChange}
+              className="grid grid-cols-3 gap-2"
+            >
+              {WIDTH_OPTIONS.map((opt) => (
+                <Radio
+                  key={opt.value}
+                  value={opt.value}
+                  className="group cursor-pointer rounded-lg border border-slate-200 bg-slate-50 p-3 text-center transition-all duration-200 hover:border-slate-300 data-[checked]:border-indigo-500 data-[checked]:bg-indigo-50 data-[checked]:ring-1 data-[checked]:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:data-[checked]:border-indigo-500 dark:data-[checked]:bg-indigo-500/10"
+                >
+                  <span className="block text-sm font-bold text-slate-500 transition-colors group-data-[checked]:text-indigo-600 dark:text-slate-400 dark:group-data-[checked]:text-indigo-400">
+                    {opt.icon}
+                  </span>
+                  <span className="mt-0.5 block text-[10px] font-medium text-slate-400 transition-colors group-data-[checked]:text-indigo-500 dark:text-slate-500 dark:group-data-[checked]:text-indigo-400">
+                    {opt.label}
+                  </span>
+                </Radio>
+              ))}
+            </RadioGroup>
+            <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+              Place fields side-by-side by setting matching widths
+            </p>
           </div>
 
           {/* Validation Settings */}
@@ -357,7 +423,6 @@ export default function FieldSettings() {
                 </SectionHeading>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    {/* Min Length */}
                     <Field>
                       <Label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
                         Min Length
@@ -371,8 +436,6 @@ export default function FieldSettings() {
                         placeholder="0"
                       />
                     </Field>
-
-                    {/* Max Length */}
                     <Field>
                       <Label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
                         Max Length
@@ -388,7 +451,6 @@ export default function FieldSettings() {
                     </Field>
                   </div>
 
-                  {/* Pattern */}
                   <Field>
                     <Label className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
                       Pattern (Regex)
