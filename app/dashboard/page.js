@@ -113,7 +113,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.08 }}
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
             >
               <div className="flex items-center justify-between">
                 <p className="text-sm text-slate-400 dark:text-slate-500">
@@ -194,9 +194,17 @@ export default function DashboardPage() {
             </p>
 
             {recentForms.length === 0 ? (
-              <div className="mt-6 rounded-xl border border-dashed border-slate-200 py-8 text-center dark:border-slate-700">
-                <p className="text-sm text-slate-400 dark:text-slate-500">
-                  No forms yet. Create one to get started.
+              <div className="mt-6 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center dark:border-slate-700">
+                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
+                  <svg className="h-5 w-5 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  No forms yet
+                </p>
+                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                  Create a form to see it here
                 </p>
               </div>
             ) : (
@@ -205,7 +213,7 @@ export default function DashboardPage() {
                   <button
                     key={form.id}
                     onClick={() => router.push(`/forms/${form.id}`)}
-                    className="flex w-full items-center justify-between py-3 text-left transition-all duration-200 first:pt-0 last:pb-0 hover:opacity-80"
+                    className="group/row flex w-full items-center justify-between rounded-lg py-3 text-left transition-all duration-200 first:pt-0 last:pb-0 hover:bg-slate-50 hover:px-2 dark:hover:bg-slate-800/50"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
@@ -218,7 +226,7 @@ export default function DashboardPage() {
                       </p>
                     </div>
                     <svg
-                      className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600"
+                      className="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover/row:translate-x-0.5 dark:text-slate-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       strokeWidth={1.5}

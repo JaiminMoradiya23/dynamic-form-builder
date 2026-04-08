@@ -108,7 +108,7 @@ export default function FormCanvas({
       ref={setNodeRef}
       className={`flex-1 overflow-y-auto rounded-2xl border-2 p-6 shadow-sm transition-all duration-300 ${
         isOver
-          ? "border-indigo-400 bg-indigo-50/30 dark:border-indigo-500 dark:bg-indigo-500/5"
+          ? "border-indigo-400 bg-indigo-50/30 shadow-indigo-100/50 dark:border-indigo-500 dark:bg-indigo-500/5 dark:shadow-indigo-500/5"
           : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
       }`}
     >
@@ -116,7 +116,7 @@ export default function FormCanvas({
         items={fields.map((f) => f.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-4">
           <AnimatePresence mode="popLayout">
             {fields.map((field) => (
               <SortableFieldCard

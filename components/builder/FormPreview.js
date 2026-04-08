@@ -331,26 +331,34 @@ export default function FormPreview({ formName }) {
           transition={{ duration: 0.3 }}
           className="text-center"
         >
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
-            <svg
-              className="h-7 w-7 text-slate-400 dark:text-slate-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
+          <div className="relative mx-auto mb-5 h-20 w-24">
+            <motion.div
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-x-2 top-0 h-16 rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-              />
-            </svg>
+              <div className="space-y-2 p-3">
+                <div className="h-1.5 w-10 rounded-full bg-slate-200 dark:bg-slate-600" />
+                <div className="h-3 w-full rounded bg-slate-100 dark:bg-slate-700" />
+                <div className="h-1.5 w-8 rounded-full bg-slate-200 dark:bg-slate-600" />
+              </div>
+            </motion.div>
+            <motion.div
+              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute bottom-0 left-1/2 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800"
+            >
+              <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              </svg>
+            </motion.div>
           </div>
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-            No fields to preview
+            Nothing to preview yet
           </h3>
-          <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-400 dark:text-slate-500">
-            Switch to Builder mode and add some fields first
+          <p className="mx-auto mt-1.5 max-w-xs text-sm leading-relaxed text-slate-400 dark:text-slate-500">
+            Switch to Builder mode and add fields to see a live preview of your form
           </p>
         </motion.div>
       </div>
@@ -398,7 +406,7 @@ export default function FormPreview({ formName }) {
             </div>
 
             {/* Submit Area */}
-            <div className="flex items-center gap-4 border-t border-slate-100 pt-6 dark:border-slate-800">
+            <div className="mt-8 flex items-center gap-4 border-t border-slate-100 pt-6 dark:border-slate-800">
               <motion.button
                 type="submit"
                 disabled={isSubmitting}

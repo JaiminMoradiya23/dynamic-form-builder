@@ -348,9 +348,11 @@ export default function FormBuilderPage() {
 
           <div className="flex shrink-0 items-center gap-3">
             {/* Export JSON */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setExportOpen(true)}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <svg
                 className="h-4 w-4"
@@ -366,11 +368,12 @@ export default function FormBuilderPage() {
                 />
               </svg>
               <span className="hidden sm:inline">Export JSON</span>
-            </button>
+            </motion.button>
 
             {/* Builder / Preview Toggle */}
             <div className="flex rounded-xl border border-slate-200 bg-slate-100 p-1 dark:border-slate-700 dark:bg-slate-800">
-              <button
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={() => dispatch(setPreviewMode(false))}
                 className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
                   !isPreviewMode
@@ -392,8 +395,9 @@ export default function FormBuilderPage() {
                   />
                 </svg>
                 Builder
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
                 onClick={() => dispatch(setPreviewMode(true))}
                 className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-200 ${
                   isPreviewMode
@@ -420,12 +424,14 @@ export default function FormBuilderPage() {
                   />
                 </svg>
                 Preview
-              </button>
+              </motion.button>
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => router.push("/forms")}
-              className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition-all duration-200 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:border-slate-600 dark:hover:bg-slate-800"
             >
               <svg
                 className="h-4 w-4"
@@ -441,7 +447,7 @@ export default function FormBuilderPage() {
                 />
               </svg>
               Back
-            </button>
+            </motion.button>
           </div>
         </motion.div>
 

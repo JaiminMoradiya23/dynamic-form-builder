@@ -24,8 +24,9 @@ export default function FieldCard({
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, y: -6 }}
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.25 }}
+      whileHover={{ scale: 1.015, y: -1 }}
+      whileTap={{ scale: 0.99 }}
+      transition={{ duration: 0.2 }}
       onClick={() => onSelect(field.id)}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
@@ -33,8 +34,8 @@ export default function FieldCard({
         isHovered ? "shadow-md" : ""
       } ${
         isSelected
-          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
-          : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"
+          ? `${colors.selectedBorder} ${colors.selectedBg} ring-1 ${colors.ring}`
+          : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"
       }`}
     >
       {/* Drag handle indicator */}

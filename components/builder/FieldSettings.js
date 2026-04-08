@@ -176,7 +176,11 @@ export default function FieldSettings() {
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800">
+            <motion.div
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800"
+            >
               <svg
                 className="h-6 w-6 text-slate-400 dark:text-slate-500"
                 fill="none"
@@ -190,12 +194,14 @@ export default function FieldSettings() {
                   d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
                 />
               </svg>
-            </div>
+            </motion.div>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Select a field to edit
             </p>
-            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-              Click any field on the canvas
+            <p className="mt-1 text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+              Click any field on the canvas to
+              <br />
+              customize its properties
             </p>
           </motion.div>
         </div>

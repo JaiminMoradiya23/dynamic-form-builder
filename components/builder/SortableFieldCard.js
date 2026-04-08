@@ -5,9 +5,9 @@ import { CSS } from "@dnd-kit/utilities";
 import FieldCard from "./FieldCard";
 
 const WIDTH_GAP_OFFSET = {
-  100: "calc(100% - 0px)",
-  50: "calc(50% - 6px)",
-  33: "calc(33.333% - 8px)",
+  100: "100%",
+  50: "calc(50% - 8px)",
+  33: "calc(33.333% - 11px)",
 };
 
 export default function SortableFieldCard({

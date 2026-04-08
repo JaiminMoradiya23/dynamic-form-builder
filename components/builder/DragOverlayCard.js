@@ -7,7 +7,7 @@ export default function DragOverlayCard({ type, label }) {
   const meta = getFieldMeta(type);
 
   return (
-    <div className="flex w-[400px] items-center gap-3 rounded-xl border-2 border-indigo-400 bg-white p-4 shadow-xl dark:border-indigo-500 dark:bg-slate-800">
+    <div className="flex w-[400px] items-center gap-3 rounded-xl border-2 border-indigo-400 bg-white p-4 shadow-2xl ring-4 ring-indigo-400/10 dark:border-indigo-500 dark:bg-slate-800 dark:ring-indigo-500/10">
       <div className={`w-1 self-stretch rounded-full ${colors.accent}`} />
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${colors.iconBg} ${colors.text}`}

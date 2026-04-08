@@ -24,7 +24,7 @@ function DraggableFieldItem({ field, index, onAddField }) {
         {...listeners}
         {...attributes}
         onClick={() => onAddField(field.type)}
-        className={`group flex w-full items-center gap-3 rounded-xl border border-slate-100 bg-white p-4 text-left shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md ${colors.hoverBg} ${colors.hoverBorder} dark:border-slate-800 dark:bg-slate-800/60`}
+        className={`group flex w-full items-center gap-3 rounded-xl border border-slate-100 bg-white p-4 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${colors.hoverBg} ${colors.hoverBorder} dark:border-slate-800 dark:bg-slate-800/60`}
       >
         <span
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${colors.bg} ${colors.text} transition-all duration-200`}
