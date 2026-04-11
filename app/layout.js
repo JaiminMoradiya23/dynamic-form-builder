@@ -34,7 +34,9 @@ export default function RootLayout({ children }) {
       </head>
       <body className="h-full min-h-0 overflow-hidden">
         <ReduxProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            <div className="h-full min-h-0">{children}</div>
+          </ThemeProvider>
         </ReduxProvider>
       </body>
     </html>

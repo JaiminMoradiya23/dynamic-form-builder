@@ -18,7 +18,7 @@ export default function AuthGuard({ children }) {
 
   if (!authorized) {
     return (
-      <div className="flex min-h-full w-full items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="flex h-full min-h-0 w-full items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
       </div>
     );

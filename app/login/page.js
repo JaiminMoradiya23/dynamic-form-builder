@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
+import { Field, Label, Input, Button } from "@headlessui/react";
+
+const INPUT_CLASS =
+  "w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 data-[focus]:ring-2 data-[hover]:border-slate-300 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500 dark:data-[hover]:border-slate-600 border-slate-200 data-[focus]:border-indigo-500 data-[focus]:ring-indigo-500/20 dark:border-slate-700 dark:data-[focus]:border-indigo-500 data-[invalid]:border-red-400 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-500/20 dark:data-[invalid]:border-red-500";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -64,19 +68,16 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Field className="space-y-1.5">
+              <Label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Email
-              </label>
-              <input
+              </Label>
+              <Input
                 type="text"
                 autoComplete="email"
                 placeholder="you@example.com"
-                className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:ring-2 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500 ${
-                  errors.email
-                    ? "border-red-400 focus:border-red-400 focus:ring-red-500/20 dark:border-red-500"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700 dark:focus:border-indigo-500"
-                }`}
+                invalid={!!errors.email}
+                className={INPUT_CLASS}
                 {...register("email", {
                   required: "Email is required",
                   pattern: {
@@ -86,37 +87,34 @@ export default function LoginPage() {
                 })}
               />
               {errors.email && (
-                <p className="mt-1.5 text-xs text-red-500">{errors.email.message}</p>
+                <p className="text-xs text-red-500">{errors.email.message}</p>
               )}
-            </div>
+            </Field>
 
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <Field className="space-y-1.5">
+              <Label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Password
-              </label>
-              <input
+              </Label>
+              <Input
                 type="password"
                 autoComplete="current-password"
                 placeholder="Enter your password"
-                className={`w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:ring-2 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500 ${
-                  errors.password
-                    ? "border-red-400 focus:border-red-400 focus:ring-red-500/20 dark:border-red-500"
-                    : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700 dark:focus:border-indigo-500"
-                }`}
+                invalid={!!errors.password}
+                className={INPUT_CLASS}
                 {...register("password", { required: "Password is required" })}
               />
               {errors.password && (
-                <p className="mt-1.5 text-xs text-red-500">{errors.password.message}</p>
+                <p className="text-xs text-red-500">{errors.password.message}</p>
               )}
-            </div>
+            </Field>
 
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-slate-900"
+              className="w-full rounded-xl bg-indigo-500 px-4 py-3 text-sm font-medium text-white transition-all duration-200 data-[hover]:bg-indigo-600 data-[focus]:outline-none data-[focus]:ring-2 data-[focus]:ring-indigo-500/50 data-[focus]:ring-offset-2 data-[disabled]:opacity-50 dark:data-[focus]:ring-offset-slate-900"
             >
               {isSubmitting ? "Signing in..." : "Sign In"}
-            </button>
+            </Button>
           </form>
         </div>
       </motion.div>
