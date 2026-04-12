@@ -17,6 +17,7 @@ import {
   ListboxOption,
   ListboxOptions,
 } from "@headlessui/react";
+import { getColSpan } from "@/utils/fieldLayout";
 
 const INPUT_CLASS =
   "w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 data-[focus]:border-indigo-400 data-[focus]:bg-white data-[focus]:ring-2 data-[focus]:ring-indigo-400/20 data-[hover]:border-slate-300 data-[invalid]:border-red-300 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-400/20 dark:data-[focus]:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:data-[focus]:border-indigo-500 dark:data-[focus]:ring-indigo-500/20 dark:data-[hover]:border-slate-600 dark:data-[invalid]:border-red-500/50 dark:data-[invalid]:data-[focus]:border-red-500 dark:data-[invalid]:data-[focus]:ring-red-500/20";
@@ -388,12 +389,15 @@ export default function FormPreview({ formName }) {
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-wrap gap-x-4 gap-y-6">
+            <div className="grid grid-cols-12 gap-x-4 gap-y-6">
               {fields.map((field) => {
-                const w = field.layout?.width || 100;
-                const widthMap = { 100: "100%", 50: "calc(50% - 8px)", 33: "calc(33.333% - 11px)" };
+                const span = getColSpan(field);
                 return (
-                  <div key={field.id} style={{ width: widthMap[w] || "100%" }}>
+                  <div
+                    key={field.id}
+                    style={{ gridColumn: `span ${span} / span ${span}` }}
+                    className="min-w-0"
+                  >
                     <PreviewField
                       field={field}
                       register={register}

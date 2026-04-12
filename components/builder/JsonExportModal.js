@@ -10,6 +10,7 @@ import {
   Description,
   CloseButton,
 } from "@headlessui/react";
+import { getColSpan, GRID_COLUMNS } from "@/utils/fieldLayout";
 
 export default function JsonExportModal({ isOpen, onClose, formName }) {
   const fields = useSelector((state) => state.form.fields);
@@ -21,7 +22,9 @@ export default function JsonExportModal({ isOpen, onClose, formName }) {
       if (placeholder) obj.placeholder = placeholder;
       if (validation && Object.keys(validation).length > 0) obj.validation = validation;
       if (options && options.length > 0) obj.options = options;
-      if (layout && layout.width !== 100) obj.layout = layout;
+      if (layout && getColSpan({ layout }) < GRID_COLUMNS) {
+        obj.layout = { colSpan: getColSpan({ layout }) };
+      }
       return obj;
     });
 

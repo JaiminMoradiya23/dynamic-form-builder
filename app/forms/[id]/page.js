@@ -28,9 +28,11 @@ import {
   removeField,
   reorderFields,
   duplicateField,
+  updateField,
 } from "@/store/slices/formSlice";
 import { setSelectedField, setPreviewMode } from "@/store/slices/uiSlice";
 import { Field, Input } from "@headlessui/react";
+import { clampColSpan } from "@/utils/fieldLayout";
 
 const DEFAULT_LABELS = {
   text: "Text Input",
@@ -57,7 +59,7 @@ function createFieldObject(type) {
       type === "select" || type === "radio"
         ? ["Option 1", "Option 2"]
         : [],
-    layout: { width: 100 },
+    layout: { colSpan: 12 },
   };
 }
 
@@ -160,6 +162,15 @@ export default function FormBuilderPage() {
 
   function handleDuplicateField(fieldId) {
     dispatch(duplicateField(fieldId));
+  }
+
+  function handleColSpanChange(fieldId, colSpan) {
+    dispatch(
+      updateField({
+        id: fieldId,
+        updates: { layout: { colSpan: clampColSpan(colSpan) } },
+      })
+    );
   }
 
   // --- Drag & Drop ---
@@ -515,6 +526,7 @@ export default function FormBuilderPage() {
                     onDeleteField={handleDeleteField}
                     onDuplicateField={handleDuplicateField}
                     onAddFirstField={() => handleAddField("text")}
+                    onColSpanChange={handleColSpanChange}
                   />
 
                   <FieldSettings />

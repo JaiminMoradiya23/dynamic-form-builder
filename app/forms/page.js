@@ -10,6 +10,7 @@ import {
   deleteForm,
   duplicateForm,
 } from "@/utils/storageHelpers";
+import { Button } from "@headlessui/react";
 
 export default function FormsPage() {
   const router = useRouter();
@@ -41,9 +42,10 @@ export default function FormsPage() {
               {forms.length} {forms.length === 1 ? "form" : "forms"} total
             </p>
           </div>
-          <button
+          <Button
+            type="button"
             onClick={() => router.push("/forms/create")}
-            className="flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
+            className="flex items-center gap-2 rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white cursor-pointer transition-all duration-200 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
           >
             <svg
               className="h-4 w-4"
@@ -59,7 +61,7 @@ export default function FormsPage() {
               />
             </svg>
             New Form
-          </button>
+          </Button>
         </div>
 
         {/* Content */}

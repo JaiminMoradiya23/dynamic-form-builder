@@ -9,20 +9,13 @@ import {
   Description,
   Input,
   Switch,
-  RadioGroup,
-  Radio,
 } from "@headlessui/react";
 import { updateField } from "@/store/slices/formSlice";
 import { getFieldColor, getFieldMeta } from "@/utils/fieldConfig";
+import { getColSpan, GRID_COLUMNS } from "@/utils/fieldLayout";
 
 const INPUT_CLASS =
   "w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 data-[focus]:border-indigo-400 data-[focus]:bg-white data-[focus]:ring-2 data-[focus]:ring-indigo-400/20 data-[hover]:border-slate-300 data-[invalid]:border-red-300 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-400/20 dark:data-[focus]:bg-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:data-[focus]:border-indigo-500 dark:data-[focus]:ring-indigo-500/20 dark:data-[hover]:border-slate-600 dark:data-[invalid]:border-red-500/50 dark:data-[invalid]:data-[focus]:border-red-500 dark:data-[invalid]:data-[focus]:ring-red-500/20";
-
-const WIDTH_OPTIONS = [
-  { value: 100, label: "Full Width", icon: "100%" },
-  { value: 50, label: "Half Width", icon: "50%" },
-  { value: 33, label: "One Third", icon: "33%" },
-];
 
 function SectionHeading({ icon, children }) {
   return (
@@ -64,7 +57,6 @@ export default function FieldSettings() {
   const [minLength, setMinLength] = useState("");
   const [maxLength, setMaxLength] = useState("");
   const [pattern, setPattern] = useState("");
-  const [fieldWidth, setFieldWidth] = useState(100);
 
   const hasOptions = field?.type === "select" || field?.type === "radio";
   const supportsValidation = useMemo(
@@ -81,7 +73,6 @@ export default function FieldSettings() {
       setMinLength(field.validation?.minLength ?? "");
       setMaxLength(field.validation?.maxLength ?? "");
       setPattern(field.validation?.pattern ?? "");
-      setFieldWidth(field.layout?.width ?? 100);
     }
   }, [field?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -108,11 +99,6 @@ export default function FieldSettings() {
   function handleRequiredChange(val) {
     setRequired(val);
     dispatchUpdate({ required: val });
-  }
-
-  function handleWidthChange(val) {
-    setFieldWidth(val);
-    dispatchUpdate({ layout: { width: val } });
   }
 
   function handleMinLengthChange(e) {
@@ -357,7 +343,7 @@ export default function FieldSettings() {
 
           <SectionDivider />
 
-          {/* Layout - Field Width */}
+          {/* Layout — 12-column grid (resize on canvas) */}
           <div>
             <SectionHeading
               icon={
@@ -378,29 +364,19 @@ export default function FieldSettings() {
             >
               Layout
             </SectionHeading>
-            <RadioGroup
-              value={fieldWidth}
-              onChange={handleWidthChange}
-              className="grid grid-cols-3 gap-2"
-            >
-              {WIDTH_OPTIONS.map((opt) => (
-                <Radio
-                  key={opt.value}
-                  value={opt.value}
-                  className="group cursor-pointer rounded-lg border border-slate-200 bg-slate-50 p-3 text-center transition-all duration-200 hover:border-slate-300 data-[checked]:border-indigo-500 data-[checked]:bg-indigo-50 data-[checked]:ring-1 data-[checked]:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:data-[checked]:border-indigo-500 dark:data-[checked]:bg-indigo-500/10"
-                >
-                  <span className="block text-sm font-bold text-slate-500 transition-colors group-data-[checked]:text-indigo-600 dark:text-slate-400 dark:group-data-[checked]:text-indigo-400">
-                    {opt.icon}
-                  </span>
-                  <span className="mt-0.5 block text-[10px] font-medium text-slate-400 transition-colors group-data-[checked]:text-indigo-500 dark:text-slate-500 dark:group-data-[checked]:text-indigo-400">
-                    {opt.label}
-                  </span>
-                </Radio>
-              ))}
-            </RadioGroup>
-            <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
-              Place fields side-by-side by setting matching widths
-            </p>
+            <div className="rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-3 dark:border-slate-700 dark:bg-slate-800/50">
+              <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                The canvas uses a <span className="font-medium">12-column</span>{" "}
+                grid. Drag the{" "}
+                <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                  right edge
+                </span>{" "}
+                of this field on the canvas to change how many columns it spans.
+              </p>
+              <p className="mt-2 text-sm font-medium tabular-nums text-slate-800 dark:text-slate-200">
+                {getColSpan(field)} / {GRID_COLUMNS} columns
+              </p>
+            </div>
           </div>
 
           {/* Validation Settings */}

@@ -3,20 +3,22 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { getFieldColor, getFieldMeta } from "@/utils/fieldConfig";
-
-const WIDTH_LABELS = { 100: "Full", 50: "Half", 33: "1/3" };
+import { GRID_COLUMNS, getColSpan } from "@/utils/fieldLayout";
 
 export default function FieldCard({
   field,
+  colSpan: colSpanProp,
   isSelected,
   onSelect,
   onDelete,
   onDuplicate,
+  dragActivatorRef,
+  dragListeners,
 }) {
   const colors = getFieldColor(field.type);
   const meta = getFieldMeta(field.type);
   const [isHovered, setIsHovered] = useState(false);
-  const width = field.layout?.width || 100;
+  const colSpan = colSpanProp ?? getColSpan(field);
 
   return (
     <motion.div
@@ -24,13 +26,13 @@ export default function FieldCard({
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, y: -6 }}
-      whileHover={{ scale: 1.015, y: -1 }}
+      // whileHover={{ scale: 1.015, y: -1 }}
       whileTap={{ scale: 0.99 }}
       transition={{ duration: 0.2 }}
       onClick={() => onSelect(field.id)}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className={`group flex cursor-pointer items-center gap-3 rounded-xl border p-4 shadow-sm transition-all duration-200 ${
+      className={`flex h-full cursor-pointer items-center gap-3 rounded-xl border p-4 shadow-sm transition-all duration-200 ${
         isHovered ? "shadow-md" : ""
       } ${
         isSelected
@@ -38,8 +40,12 @@ export default function FieldCard({
           : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"
       }`}
     >
-      {/* Drag handle indicator */}
-      <div className="flex shrink-0 flex-col gap-[3px] opacity-40 transition-opacity duration-200 group-hover:opacity-70">
+      {/* Drag handle — sortable activator */}
+      <div
+        ref={dragActivatorRef}
+        {...(dragListeners || {})}
+        className="flex shrink-0 flex-col gap-[3px] cursor-grab touch-none opacity-40 transition-opacity duration-200 active:cursor-grabbing group-hover:opacity-70"
+      >
         <div className="flex gap-[3px]">
           <span className="h-1 w-1 rounded-full bg-slate-400" />
           <span className="h-1 w-1 rounded-full bg-slate-400" />
@@ -80,9 +86,9 @@ export default function FieldCard({
           <span className="text-xs text-slate-400 dark:text-slate-500">
             {meta.label}
           </span>
-          {width !== 100 && (
+          {colSpan < GRID_COLUMNS && (
             <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400">
-              {WIDTH_LABELS[width] || `${width}%`}
+              {colSpan}/{GRID_COLUMNS}
             </span>
           )}
         </div>
@@ -95,6 +101,7 @@ export default function FieldCard({
         }`}
       >
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onSelect(field.id);
@@ -117,6 +124,7 @@ export default function FieldCard({
           </svg>
         </button>
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDuplicate?.(field.id);
@@ -139,6 +147,7 @@ export default function FieldCard({
           </svg>
         </button>
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             onDelete(field.id);

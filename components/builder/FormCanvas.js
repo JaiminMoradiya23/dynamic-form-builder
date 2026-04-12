@@ -1,10 +1,11 @@
 "use client";
 
+import { useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDroppable } from "@dnd-kit/core";
 import {
   SortableContext,
-  verticalListSortingStrategy,
+  rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import SortableFieldCard from "./SortableFieldCard";
 
@@ -15,14 +16,25 @@ export default function FormCanvas({
   onDeleteField,
   onDuplicateField,
   onAddFirstField,
+  onColSpanChange,
 }) {
+  const gridRef = useRef(null);
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
+
+  const setGridRef = useCallback(
+    (node) => {
+      setNodeRef(node);
+      gridRef.current = node;
+    },
+    [setNodeRef]
+  );
 
   if (fields.length === 0) {
     return (
       <div
-        ref={setNodeRef}
-        className={`flex min-h-full flex-1 items-center justify-center rounded-2xl border-2 border-dashed p-8 shadow-sm transition-all duration-300 ${
+        ref={setGridRef}
+        data-field-grid
+        className={`flex min-h-0 flex-1 items-center justify-center rounded-2xl border-2 border-dashed p-8 shadow-sm transition-all duration-300 ${
           isOver
             ? "border-indigo-400 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-500/5"
             : "border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900"
@@ -105,7 +117,8 @@ export default function FormCanvas({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={setGridRef}
+      data-field-grid
       className={`flex-1 overflow-y-auto rounded-2xl border-2 p-6 shadow-sm transition-all duration-300 ${
         isOver
           ? "border-indigo-400 bg-indigo-50/30 shadow-indigo-100/50 dark:border-indigo-500 dark:bg-indigo-500/5 dark:shadow-indigo-500/5"
@@ -114,18 +127,20 @@ export default function FormCanvas({
     >
       <SortableContext
         items={fields.map((f) => f.id)}
-        strategy={verticalListSortingStrategy}
+        strategy={rectSortingStrategy}
       >
-        <div className="flex flex-wrap gap-4">
+        <div className="grid auto-rows-min grid-cols-12 gap-4">
           <AnimatePresence mode="popLayout">
             {fields.map((field) => (
               <SortableFieldCard
                 key={field.id}
                 field={field}
+                gridRef={gridRef}
                 isSelected={selectedFieldId === field.id}
                 onSelect={onSelectField}
                 onDelete={onDeleteField}
                 onDuplicate={onDuplicateField}
+                onColSpanChange={onColSpanChange}
               />
             ))}
           </AnimatePresence>
