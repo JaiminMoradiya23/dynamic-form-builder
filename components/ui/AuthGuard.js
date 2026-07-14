@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { REQUIRE_AUTH } from "@/utils/authConfig";
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
+  const [authorized, setAuthorized] = useState(!REQUIRE_AUTH);
 
   useEffect(() => {
+    if (!REQUIRE_AUTH) return;
+
     const isAuth = localStorage.getItem("isAuthenticated");
     if (isAuth !== "true") {
       router.replace("/login");

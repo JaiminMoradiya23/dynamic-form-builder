@@ -2,11 +2,17 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { REQUIRE_AUTH } from "@/utils/authConfig";
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    if (!REQUIRE_AUTH) {
+      router.replace("/dashboard");
+      return;
+    }
+
     const isAuth = localStorage.getItem("isAuthenticated");
     if (isAuth === "true") {
       router.replace("/dashboard");

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Field, Label, Input, Button } from "@headlessui/react";
+import { REQUIRE_AUTH } from "@/utils/authConfig";
 
 const INPUT_CLASS =
   "w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 data-[focus]:ring-2 data-[hover]:border-slate-300 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500 dark:data-[hover]:border-slate-600 border-slate-200 data-[focus]:border-indigo-500 data-[focus]:ring-indigo-500/20 dark:border-slate-700 dark:data-[focus]:border-indigo-500 data-[invalid]:border-red-400 data-[invalid]:data-[focus]:border-red-400 data-[invalid]:data-[focus]:ring-red-500/20 dark:data-[invalid]:border-red-500";
@@ -20,7 +21,7 @@ export default function LoginPage() {
   } = useForm();
 
   useEffect(() => {
-    if (localStorage.getItem("isAuthenticated") === "true") {
+    if (!REQUIRE_AUTH || localStorage.getItem("isAuthenticated") === "true") {
       router.replace("/dashboard");
     }
   }, [router]);

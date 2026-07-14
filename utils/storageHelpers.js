@@ -1,8 +1,33 @@
+import { SAMPLE_FORMS } from "./sampleForms";
+
 const STORAGE_KEY = "forms";
+const SAMPLE_FORMS_SEED_KEY = "forms_sample_seeded";
+
+function ensureSampleForms() {
+  if (typeof window === "undefined") return;
+  if (localStorage.getItem(SAMPLE_FORMS_SEED_KEY)) return;
+
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      const existing = JSON.parse(raw);
+      if (existing.length > 0) {
+        localStorage.setItem(SAMPLE_FORMS_SEED_KEY, "true");
+        return;
+      }
+    } catch {
+      // fall through and seed defaults
+    }
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(SAMPLE_FORMS));
+  localStorage.setItem(SAMPLE_FORMS_SEED_KEY, "true");
+}
 
 export function getForms() {
   if (typeof window === "undefined") return [];
   try {
+    ensureSampleForms();
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
