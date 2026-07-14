@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Button, Description } from "@headlessui/react";
+import { Button } from "@headlessui/react";
 import ProtectedLayout from "@/components/ui/ProtectedLayout";
 import { getForms, formatDate } from "@/utils/storageHelpers";
 
@@ -228,13 +228,13 @@ export default function DashboardPage() {
             </div>
 
             {recentForms.length === 0 ? (
-              <Description className="mt-4 rounded-xl border border-dashed border-slate-200/90 bg-slate-50/50 px-4 py-9 text-center text-sm leading-relaxed text-slate-500 dark:border-slate-700 dark:bg-slate-800/30 dark:text-slate-400">
+              <p className="mt-4 rounded-xl border border-dashed border-slate-200/90 bg-slate-50/50 px-4 py-9 text-center text-sm leading-relaxed text-slate-500 dark:border-slate-700 dark:bg-slate-800/30 dark:text-slate-400">
                 No forms yet. Use{" "}
                 <span className="font-medium text-slate-700 dark:text-slate-200">
                   New form
                 </span>{" "}
                 above to get started.
-              </Description>
+              </p>
             ) : (
               <ul className="mt-3 space-y-1" role="list">
                 {recentForms.map((form) => (
