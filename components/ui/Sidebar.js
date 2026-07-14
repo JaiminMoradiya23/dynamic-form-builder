@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -66,14 +67,22 @@ const navItems = [
 
 export default function Sidebar({ isOpen, onClose }) {
   const pathname = usePathname();
+  const [userCredentials, setUserCredentials] = useState({});
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("userCredentials");
+      setUserCredentials(stored ? JSON.parse(stored) : {});
+    } catch {
+      setUserCredentials({});
+    }
+  }, []);
 
   const isActive = (href) => {
     if (href === "/dashboard") return pathname === "/dashboard";
     if (href === "/forms") return pathname === "/forms";
     return pathname === href;
   };
-
-  const userCredentials = JSON.parse(localStorage.getItem("userCredentials") || "{}");
 
   return (
     <>
